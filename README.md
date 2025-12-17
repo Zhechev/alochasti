@@ -1,59 +1,117 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# GiftShare — A Community Gifting Board
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+GiftShare is a small Laravel 12 web application where registered users can post items they are giving away for free. Other users can browse, vote, and comment on listings. The UI is built with **Bootstrap 5** and the interactive parts are built with **Livewire 3**.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Authentication required for the main content (guests are redirected to login/register)
+- Listings (items):
+  - Fields: title, description, category, city
+  - Tags: assign multiple tags to an item
+  - Optional: weight, dimensions
+  - Photos: upload one or more images (stored on the public disk)
+  - Status: available / gifted (with gifted timestamp)
+  - Ownership rules: only the author can edit/delete an item
+  - Photo management: authors can delete existing photos while editing
+- Browsing & filtering (feed):
+  - Pagination
+  - Filter by category, city, status (available/gifted)
+  - Text search (title or tag name)
+  - Filter by one or more tags
+  - Sorting (newest / most upvoted)
+  - My Items page (shows only the authenticated user's listings)
+- Item details:
+  - Full description, all photos, category, city, author
+  - Gifted indicator
+- Interactions (no full page reload, Livewire):
+  - Upvote/downvote with toggle (one vote per user per item enforced at DB level)
+  - Comments (create + paginated list)
+- Demo data:
+  - `php artisan migrate:fresh --seed` creates categories, users, items, votes and comments
+  - Item photos in seed data are generated SVG placeholders saved to the public disk
+  - Bulgarian cities are seeded into the `cities` table and items reference them via `city_id`
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tech Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP: **8.2+**
+- Framework: **Laravel 12**
+- UI: **Bootstrap 5**
+- Interactivity: **Livewire 3**
+- Database: **MariaDB**
 
-## Learning Laravel
+## Requirements (local / non-Docker)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- PHP **8.2+** (with common extensions required by Laravel, including `pdo_mysql`)
+- [Composer](https://getcomposer.org/)
+- Node.js **20.19+** (or **22.12+**) + npm
+- MariaDB (or MySQL-compatible server)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Setup (local / non-Docker)
 
-## Laravel Sponsors
+1) Install dependencies:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- `composer install`
+- `npm install`
 
-### Premium Partners
+2) Configure environment:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- Copy `.env.example` to `.env`
+- Set MariaDB connection values (`DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`)
+- Generate app key: `php artisan key:generate`
 
-## Contributing
+Example MariaDB settings (adjust to your machine):
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=giftshare
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-## Code of Conduct
+Make sure the database exists (example):
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- `mysql -u root -p -e "CREATE DATABASE giftshare CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"`
 
-## Security Vulnerabilities
+3) Public storage symlink (required for item photos):
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- `php artisan storage:link`
 
-## License
+4) Migrate + seed:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- `php artisan migrate:fresh --seed`
+
+5) Run the app:
+
+- `php artisan serve`
+- In another terminal:
+  - dev: `npm run dev`
+  - or build once: `npm run build`
+
+Tip: you can also use `composer run dev` to start Laravel + Vite in one command (requires Node installed).
+
+## Setup (Docker / Sail) — optional
+
+If you prefer Docker, you can run the project with Laravel Sail:
+
+- Start containers: `./vendor/bin/sail up -d`
+- Install dependencies:
+  - `./vendor/bin/sail composer install`
+  - `./vendor/bin/sail npm install`
+- Generate key: `./vendor/bin/sail artisan key:generate`
+- Migrate + seed: `./vendor/bin/sail artisan migrate:fresh --seed`
+- Storage link: `./vendor/bin/sail artisan storage:link`
+- Run Vite: `./vendor/bin/sail npm run dev`
+
+Note: if you ever see `403` when opening `/storage/...` assets in Docker, recreate the symlink inside the container/project as a relative link.
+
+## Demo credentials
+
+- Email: `test@example.com`
+- Password: `password`
+
+## Notes
+
+- This repository pins Composer to a PHP 8.2 platform for consistent installs across environments.
+- Vite warns if Node is older than the recommended version. For best results, use **Node 20.19+** (or **22.12+**).
